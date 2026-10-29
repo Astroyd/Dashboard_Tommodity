@@ -1,12 +1,12 @@
 """
 GRRA - Yapay Zeka Destekli Satın Alma ve Envanter Karar Destek Sistemi
 ----------------------------------------------------------------------
-Kurumsal Karar Destek ve Optimizasyon Platformu (Üst Sekme Navigasyonlu)
-Veri kaynakları: data/envanter.db, data/dis_degiskenler.csv,
+Tasarım Dili: Material Soft UI / Bootstrap 5 SaaS Dashboard Stili
+Veri Kaynakları: data/envanter.db, data/dis_degiskenler.csv,
                  data/hibrit_tahmin_sonuc.csv, data/hibrit_simulasyon_sonuc.csv
 
 Çalıştırmak için:
-    streamlit run 08_dashboard.py
+    & c:\python315\python.exe -m streamlit run 08_dashboard.py
 """
 
 import sqlite3
@@ -20,204 +20,298 @@ from plotly.subplots import make_subplots
 import streamlit as st
 
 # ---------------------------------------------------------------------------
-# 1. SAYFA YAPILANDIRMASI VE KURUMSAL CSS STİLİ
+# 1. SAYFA YAPILANDIRMASI VE MATERIAL SOFT UI CSS STİLİ
 # ---------------------------------------------------------------------------
 st.set_page_config(
-    page_title="GRRA | Satın Alma ve Envanter Karar Destek Sistemi",
+    page_title="GRRA | Satın Alma ve Envanter KDS",
     layout="wide",
     initial_sidebar_state="expanded",
 )
 
 st.markdown("""
 <style>
-    /* Genel Sayfa Düzeni */
-    .block-container {
-        padding-top: 1.2rem;
-        padding-bottom: 2rem;
-        max-width: 97%;
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+    /* Ana Arka Plan ve Tipografi (Material Soft Gri Zemin) */
+    .stApp {
+        background-color: #f4f5f7;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        color: #1e293b;
     }
-    h1, h2, h3, h4, h5 {
-        font-family: 'Inter', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-        color: #0f172a;
-        font-weight: 600;
-        letter-spacing: -0.015em;
+    .block-container {
+        padding-top: 1.4rem;
+        padding-bottom: 2.5rem;
+        max-width: 96%;
     }
 
-    /* Üst Kurumsal Başlık Bandı */
-    .corp-header {
+    /* Sol Menü (Temiz Beyaz Material Sidebar) */
+    section[data-testid="stSidebar"] {
+        background-color: #ffffff !important;
+        border-right: 1px solid #e5e7eb;
+        box-shadow: 4px 0 16px rgba(0, 0, 0, 0.02);
+    }
+    .sidebar-brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 4px 0 16px 0;
+        border-bottom: 1px solid #f1f5f9;
+        margin-bottom: 16px;
+    }
+    .sidebar-brand-box {
+        background: linear-gradient(195deg, #323a54, #1a2035);
+        color: #ffffff;
+        font-weight: 700;
+        font-size: 0.85rem;
+        padding: 8px 11px;
+        border-radius: 8px;
+        letter-spacing: 0.04em;
+    }
+    .sidebar-brand-text {
+        font-size: 0.98rem;
+        font-weight: 700;
+        color: #1e293b;
+        letter-spacing: -0.01em;
+    }
+    .sidebar-section {
+        font-size: 0.72rem;
+        font-weight: 700;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin-top: 18px;
+        margin-bottom: 8px;
+    }
+    .sidebar-model-card {
+        background-color: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 12px 14px;
+        font-size: 0.78rem;
+        color: #475569;
+        line-height: 1.5;
+        margin-top: 6px;
+        margin-bottom: 10px;
+    }
+
+    /* Üst Breadcrumb ve Başlık Çubuğu */
+    .top-navbar {
         display: flex;
         justify-content: space-between;
-        align-items: center;
-        background-color: #0f172a;
-        color: #f8fafc;
-        padding: 14px 22px;
-        border-radius: 4px;
-        margin-bottom: 14px;
-        border-bottom: 3px solid #2563eb;
-    }
-    .corp-title {
-        font-size: 1.25rem;
-        font-weight: 700;
-        letter-spacing: 0.01em;
-        color: #ffffff;
-        margin: 0;
-    }
-    .corp-subtitle {
-        font-size: 0.80rem;
-        color: #94a3b8;
-        margin-top: 2px;
-    }
-    .corp-badges {
-        display: flex;
-        gap: 12px;
-        font-size: 0.80rem;
-    }
-    .corp-badge {
-        background-color: #1e293b;
-        border: 1px solid #334155;
-        color: #e2e8f0;
-        padding: 6px 12px;
-        border-radius: 3px;
-        font-weight: 500;
-    }
-
-    /* En Üst Navigasyon Sekmeleri (Top-Level Tabs) */
-    .stTabs [data-baseweb="tab-list"] {
-        gap: 6px;
-        background-color: #f1f5f9;
-        padding: 6px 8px;
-        border-radius: 4px;
-        border: 1px solid #cbd5e1;
+        align-items: flex-start;
         margin-bottom: 18px;
     }
+    .breadcrumb {
+        font-size: 0.80rem;
+        color: #64748b;
+        margin-bottom: 4px;
+    }
+    .breadcrumb span {
+        color: #0f172a;
+        font-weight: 600;
+    }
+    .page-title {
+        font-size: 1.55rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin: 0;
+        letter-spacing: -0.02em;
+    }
+    .page-subtitle {
+        font-size: 0.88rem;
+        color: #64748b;
+        margin-top: 2px;
+    }
+    .status-pills {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+    .status-pill {
+        background-color: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 8px 14px;
+        font-size: 0.80rem;
+        color: #475569;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+    }
+    .status-pill b {
+        color: #0f172a;
+    }
+
+    /* Üst Navigasyon Sekmeleri (Koyu Antrasit Hap Stili) */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 8px;
+        background-color: #ffffff;
+        padding: 8px 10px;
+        border-radius: 12px;
+        border: 1px solid #e5e7eb;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+        margin-bottom: 22px;
+    }
     .stTabs [data-baseweb="tab"] {
-        height: 42px;
+        height: 40px;
         background-color: transparent;
-        border-radius: 3px;
+        border-radius: 8px;
         padding: 0 18px;
         font-weight: 600;
-        font-size: 0.86rem;
-        color: #475569;
+        font-size: 0.85rem;
+        color: #64748b;
         border: none;
     }
     .stTabs [aria-selected="true"] {
-        background-color: #ffffff !important;
-        color: #0f172a !important;
-        border-bottom: 2px solid #2563eb !important;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        background: linear-gradient(195deg, #323a54, #1a2035) !important;
+        color: #ffffff !important;
+        box-shadow: 0 4px 10px rgba(26, 32, 53, 0.25);
     }
 
-    /* KPI Metrik Kartları */
-    div[data-testid="stMetric"] {
+    /* Görseldeki Özel KPI Kartları (Sağ Üstte Koyu Antrasit Rozetli) */
+    .mat-kpi-card {
         background-color: #ffffff;
-        border: 1px solid #cbd5e1;
-        border-top: 3px solid #0f172a;
-        padding: 12px 16px;
-        border-radius: 4px;
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+        border-radius: 14px;
+        padding: 18px 20px 14px 20px;
+        border: 1px solid #e5e7eb;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+        margin-bottom: 20px;
     }
-    div[data-testid="stMetricLabel"] {
+    .mat-kpi-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+    }
+    .mat-kpi-label {
+        font-size: 0.82rem;
+        color: #64748b;
+        font-weight: 500;
+        margin-bottom: 4px;
+    }
+    .mat-kpi-value {
+        font-size: 1.55rem;
+        font-weight: 700;
+        color: #1e293b;
+        letter-spacing: -0.02em;
+    }
+    .mat-kpi-icon {
+        background: linear-gradient(195deg, #323a54, #1a2035);
+        color: #ffffff;
+        width: 44px;
+        height: 44px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         font-size: 0.76rem;
-        color: #475569;
-        font-weight: 600;
-        text-transform: uppercase;
+        font-weight: 700;
+        letter-spacing: 0.03em;
+        box-shadow: 0 4px 10px rgba(26, 32, 53, 0.22);
+    }
+    .mat-kpi-divider {
+        height: 1px;
+        background-color: #f1f5f9;
+        margin: 12px 0 10px 0;
+    }
+    .mat-kpi-footer {
+        font-size: 0.80rem;
+        color: #64748b;
+    }
+    .delta-pos {
+        color: #16a34a;
+        font-weight: 700;
+    }
+    .delta-neg {
+        color: #dc2626;
+        font-weight: 700;
+    }
+    .delta-neutral {
+        color: #2563eb;
+        font-weight: 700;
+    }
+
+    /* Grafik ve İçerik Kartları (White Surface Cards) */
+    div[data-testid="stVerticalBlockBorderWrapper"] {
+        background-color: #ffffff !important;
+        border-radius: 14px !important;
+        border: 1px solid #e5e7eb !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03) !important;
+        padding: 6px 10px !important;
+    }
+    .card-title {
+        font-size: 1.02rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 2px;
+    }
+    .card-subtitle {
+        font-size: 0.82rem;
+        color: #64748b;
+        margin-bottom: 10px;
+    }
+    .card-footer {
+        border-top: 1px solid #f1f5f9;
+        padding-top: 8px;
+        margin-top: 4px;
+        font-size: 0.76rem;
+        color: #94a3b8;
+    }
+
+    /* Tedarik Emri / Sipariş Özeti Kartı (Orders Overview Stili) */
+    .order-banner {
+        background-color: #ffffff;
+        border-radius: 14px;
+        border: 1px solid #e5e7eb;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+        padding: 20px 24px;
+        margin-bottom: 22px;
+    }
+    .order-banner-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #f1f5f9;
+        padding-bottom: 12px;
+        margin-bottom: 14px;
+    }
+    .order-badge-buy {
+        background-color: #dcfce7;
+        color: #15803d;
+        font-weight: 700;
+        font-size: 0.76rem;
+        padding: 5px 12px;
+        border-radius: 6px;
         letter-spacing: 0.04em;
     }
-    div[data-testid="stMetricValue"] {
-        font-size: 1.35rem;
-        color: #0f172a;
+    .order-badge-hold {
+        background-color: #e0f2fe;
+        color: #0369a1;
         font-weight: 700;
+        font-size: 0.76rem;
+        padding: 5px 12px;
+        border-radius: 6px;
+        letter-spacing: 0.04em;
     }
-
-    /* Kurumsal ERP Tedarik Emri / Karar Fişi */
-    .erp-order-card {
-        background-color: #ffffff;
-        border: 1px solid #cbd5e1;
-        border-radius: 4px;
-        margin-top: 10px;
-        margin-bottom: 22px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
-        overflow: hidden;
-    }
-    .erp-header-buy {
-        background-color: #065f46;
-        color: #ffffff;
-        padding: 10px 20px;
-        font-size: 0.85rem;
-        font-weight: 700;
-        letter-spacing: 0.05em;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-    .erp-header-hold {
-        background-color: #1e3a8a;
-        color: #ffffff;
-        padding: 10px 20px;
-        font-size: 0.85rem;
-        font-weight: 700;
-        letter-spacing: 0.05em;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-    .erp-grid {
+    .order-metrics-row {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
-        border-bottom: 1px solid #e2e8f0;
+        gap: 16px;
         background-color: #f8fafc;
+        border-radius: 10px;
+        padding: 14px 18px;
+        border: 1px solid #f1f5f9;
+        margin-bottom: 12px;
     }
-    .erp-cell {
-        padding: 12px 20px;
-        border-right: 1px solid #e2e8f0;
-    }
-    .erp-cell:last-child {
-        border-right: none;
-    }
-    .erp-cell-label {
+    .order-metric-item small {
+        display: block;
         font-size: 0.72rem;
         color: #64748b;
         text-transform: uppercase;
         font-weight: 600;
-        letter-spacing: 0.04em;
-        margin-bottom: 4px;
+        margin-bottom: 3px;
     }
-    .erp-cell-value {
-        font-size: 1.05rem;
-        color: #0f172a;
-        font-weight: 700;
-    }
-    .erp-rationale {
-        padding: 12px 20px;
-        font-size: 0.86rem;
-        color: #334155;
-        background-color: #ffffff;
-        line-height: 1.5;
-    }
-
-    /* Yan Menü (Sidebar) Model Künyesi Kartı */
-    .sidebar-model-box {
-        background-color: #f8fafc;
-        border: 1px solid #cbd5e1;
-        border-left: 3px solid #2563eb;
-        padding: 10px 12px;
-        border-radius: 3px;
-        font-size: 0.80rem;
-        color: #1e293b;
-        margin-top: 6px;
-        margin-bottom: 12px;
-        line-height: 1.45;
-    }
-    .sidebar-section-title {
-        font-size: 0.78rem;
+    .order-metric-item span {
+        font-size: 1.02rem;
         font-weight: 700;
         color: #0f172a;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        border-bottom: 1px solid #cbd5e1;
-        padding-bottom: 4px;
-        margin-top: 14px;
-        margin-bottom: 10px;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -229,38 +323,37 @@ SIM_CSV = Path("data/hibrit_simulasyon_sonuc.csv")
 
 ADLAR = {"pamuk": "Pamuk", "aluminyum": "Alüminyum", "bugday": "Buğday"}
 
-# Aktif Modellerin Detaylı Künyesi ve Amaçları
 MODEL_KATALOGU = {
     "quant_yon_hibrit": {
-        "ad": "Çoklu Frekans (MIDAS) + Olasılıksal Yön Hibriti (quant_yon_hibrit)",
+        "ad": "MIDAS Olasılıksal Yön ve Huber Hibriti (quant_yon_hibrit)",
         "kisa_ad": "MIDAS Olasılıksal Yön Hibriti (Şampiyon)",
-        "mimari": "Huber Regresyon + L2 Lojistik Sınıflandırıcı + Makro Ridge Birleşimi",
-        "girdiler": "CFTC COT Smart Money Spread, Dolar Endeksi (DXY), VIX, Maliyet Marjı, Hasat Anomalisi ve Volatilite MACD.",
-        "amac": "Aykırı fiyat şoklarından etkilenmeden yön olasılığını tahmin etmek ve tüm sipariş senaryolarında sıfır zarar ile maksimum net ekonomik tasarruf sağlamak.",
-        "rejim": "Hem kriz/şok dönemleri hem de standart piyasa rejimleri (En yüksek genel performans).",
+        "mimari": "Huber Regresyon + L2 Lojistik Sınıflandırıcı + Makro Ridge",
+        "girdiler": "CFTC COT Smart Money Spread, Dolar Endeksi (DXY), VIX, Maliyet Marjı, Hasat Anomalisi ve Vol-MACD.",
+        "amac": "Aykırı fiyat şoklarından etkilenmeden yön olasılığını tahmin etmek ve tüm senaryolarda sıfır zarar ile maksimum tasarruf sağlamak.",
+        "rejim": "Kriz/şok dönemleri ve standart piyasa rejimleri (En yüksek net tasarruf: $101,459).",
     },
     "ridge_dis": {
         "ad": "Dış Değişkenli Ridge Regresyon (ridge_dis)",
         "kisa_ad": "Ridge + Makro Dışsal (ridge_dis)",
         "mimari": "L2 Cezalı Doğrusal Regresyon + TimeSeriesSplit Çapraz Doğrulama",
-        "girdiler": "Maliyet Marjı (Cost Spread), Volatilite Ölçekli MACD ve Makro Emtia Sepeti (Brent Petrol, Doğal Gaz, Kömür, Üre, Mısır, Soya, Bakır) 1 ve 3 aylık değişimleri.",
-        "amac": "Hammadde fiyatını üretim girdileri ve ikame ürün maliyetleriyle birlikte modelleyerek kısa-orta vadeli (1-3 ay) satın alma zamanlamasında maksimum maliyet tasarrufu sağlamak.",
+        "girdiler": "Maliyet Marjı (Cost Spread), Volatilite MACD ve 7 Makro Emtia (Petrol, Doğal Gaz, Kömür, Üre, Mısır, Soya, Bakır).",
+        "amac": "Hammadde fiyatını üretim girdileri ve ikame ürün maliyetleriyle birlikte modelleyerek kısa-orta vadeli alım zamanlamasını optimize etmek.",
         "rejim": "Enflasyonist dönemler, enerji krizleri ve arz-talep şokları.",
     },
     "hibrit_ensemble": {
         "ad": "Hibrit Kantitatif Formül + ML Topluluğu (hibrit_ensemble)",
         "kisa_ad": "Hibrit Formül + ML (hibrit_ensemble)",
-        "mimari": "Ters-MSE Ağırlıklı Kantitatif Uzman Formüller + Ridge Regresyon Birleşimi",
+        "mimari": "Ters-MSE Ağırlıklı Kantitatif Uzman Formüller + Ridge Birleşimi",
         "girdiler": "MR60, MR120, Maliyet Marjı Z-Skoru, Volatilite MACD, Kısa Vade Sharpe Momentum ve Dış Piyasa İvmesi.",
-        "amac": "Tek bir modele bağımlı kalmadan trend takipçisi ve ortalamaya dönüş formüllerini geçmiş hata performanslarına göre harmanlayarak tahmin varyansını düşürmek.",
+        "amac": "Trend takipçisi ve ortalamaya dönüş formüllerini geçmiş hata performanslarına göre harmanlayarak tahmin varyansını düşürmek.",
         "rejim": "Yönün belirsiz olduğu geçiş dönemleri ve çoklu ufuk (1-6 ay) planlaması.",
     },
     "hibrit_ridge": {
         "ad": "Üstel Ağırlıklı Hibrit Ridge (hibrit_ridge)",
         "kisa_ad": "Üstel Ağırlıklı Ridge (hibrit_ridge)",
-        "mimari": "Yakın Geçmiş Odaklı (Exponentially Weighted) L2 Regresyon + James-Stein Shrinkage",
+        "mimari": "Yakın Geçmiş Odaklı (Exponentially Weighted) L2 Regresyon",
         "girdiler": "6 Kantitatif Finans Sinyali + Mevsimsellik Bileşenleri (Sin/Cos).",
-        "amac": "1990'lardaki eski piyasa verilerinin ağırlığını azaltıp son yıllardaki yapısal kırılmalara ve güncel piyasa rejimine hızla adapte olmak.",
+        "amac": "Eski piyasa verilerinin ağırlığını azaltıp son yıllardaki yapısal kırılmalara ve güncel piyasa rejimine hızla adapte olmak.",
         "rejim": "Yapısal kırılma sonrası yeni fiyat dengelerinin oluştuğu piyasalar.",
     },
     "mr_maliyet": {
@@ -268,15 +361,15 @@ MODEL_KATALOGU = {
         "kisa_ad": "Maliyet Bazlı Mean-Reversion (mr_maliyet)",
         "mimari": "Sabit Terimli OLS + 10 Yıllık Denge ve Üretim Maliyeti Spread Formülü",
         "girdiler": "120 Aylık Ortalamadan Sapma (MR120) ve Üretim Maliyeti / İkame Marjı (Cost Spread).",
-        "amac": "Fiyatın üretim maliyetine ve uzun vadeli tarihsel ortalamasına göre aşırı ucuz veya aşırı pahalı olduğu bölgeleri tespit etmek.",
-        "rejim": "Yatay/dalgalı piyasalar ve uzun vadeli (6-12 ay) stratejik kontrat bağlama kararları.",
+        "amac": "Fiyatın üretim maliyetine ve uzun vadeli tarihsel ortalamasına göre aşırı ucuz veya pahalı olduğu bölgeleri tespit etmek.",
+        "rejim": "Yatay/dalgalı piyasalar ve uzun vadeli (6-12 ay) kontrat kararları.",
     },
     "ridge": {
         "ad": "Standart İçsel Ridge Regresyon (ridge)",
         "kisa_ad": "Standart İçsel Ridge (ridge)",
         "mimari": "Standartlaştırılmış L2 Doğrusal Regresyon (Alpha=10.0)",
         "girdiler": "Yalnızca hammaddenin kendi geçmiş getirileri (lag 1..6), 3-12 aylık momentum ve oynaklık.",
-        "amac": "Dış veri gerektirmeden sadece içsel fiyat hareketleriyle temel referans (benchmark) tahmini üretmek.",
+        "amac": "Dış veri gerektirmeden sadece içsel fiyat hareketleriyle temel referans tahmini üretmek.",
         "rejim": "Dışsal makro şokların olmadığı standart piyasa koşulları.",
     },
 }
@@ -289,12 +382,35 @@ MALIYET_SEPETI = {
 
 
 # ---------------------------------------------------------------------------
-# 2. VERİ YÜKLEME VE HESAPLAMA FONKSİYONLARI
+# 2. YARDIMCI GÖRSEL BİLEŞEN FONKSİYONLARI (MATERIAL KARTLAR)
+# ---------------------------------------------------------------------------
+def material_kpi_karti(baslik: str, deger: str, rozet: str, alt_vurgulu: str, alt_aciklama: str, durum: str = "pos"):
+    renk_sinifi = {"pos": "delta-pos", "neg": "delta-neg", "neutral": "delta-neutral"}.get(durum, "delta-neutral")
+    st.markdown(
+        f"""<div class="mat-kpi-card">
+            <div class="mat-kpi-top">
+                <div>
+                    <div class="mat-kpi-label">{baslik}</div>
+                    <div class="mat-kpi-value">{deger}</div>
+                </div>
+                <div class="mat-kpi-icon">{rozet}</div>
+            </div>
+            <div class="mat-kpi-divider"></div>
+            <div class="mat-kpi-footer">
+                <span class="{renk_sinifi}">{alt_vurgulu}</span> {alt_aciklama}
+            </div>
+        </div>""",
+        unsafe_allow_html=True,
+    )
+
+
+# ---------------------------------------------------------------------------
+# 3. VERİ YÜKLEME VE HESAPLAMA FONKSİYONLARI
 # ---------------------------------------------------------------------------
 @st.cache_data
 def verileri_yukle():
     if not DB.exists():
-        st.error("HATA: data/envanter.db veritabanı bulunamadı. Lütfen önce 03, 16 ve 17 numaralı scriptleri çalıştırın.")
+        st.error("HATA: data/envanter.db veritabanı bulunamadı. Lütfen önce 03, 18 ve 17 numaralı scriptleri çalıştırın.")
         st.stop()
 
     with sqlite3.connect(DB) as con:
@@ -400,57 +516,58 @@ def canli_faktoru_cozumle(fiyat_df: pd.DataFrame, dis_df: pd.DataFrame, hid: str
 
 
 # ---------------------------------------------------------------------------
-# 3. ANA EKRAN VE KONTROL PANELİ AKIŞI
+# 4. ANA EKRAN VE MATERIAL DASHBOARD AKIŞI
 # ---------------------------------------------------------------------------
 def main():
     ham, fiyat, tuketim, tahmin, sim_stok, sim_siparis, dis_df, tah_ozet, sim_ozet = verileri_yukle()
 
     # =========================================================================
-    # SOL KONTROL PANELİ (YAPILANDIRILMIŞ SİSTEM PARAMETRELERİ)
+    # SOL MENÜ (MATERIAL SIDEBAR)
     # =========================================================================
-    st.sidebar.markdown("## GRRA KONTROL PANELİ")
-    st.sidebar.caption("Satın Alma ve Envanter Karar Destek Sistemi")
+    st.sidebar.markdown(
+        """<div class="sidebar-brand">
+            <div class="sidebar-brand-box">GRRA</div>
+            <div class="sidebar-brand-text">Karar Destek Platformu</div>
+        </div>""",
+        unsafe_allow_html=True,
+    )
 
-    # BÖLÜM 1: EMTİA VE ALGORİTMA SEÇİMİ
-    st.sidebar.markdown('<div class="sidebar-section-title">1. Emtia ve Model Seçimi</div>', unsafe_allow_html=True)
+    st.sidebar.markdown('<div class="sidebar-section">Emtia ve Model Yapılandırması</div>', unsafe_allow_html=True)
 
     secili_hid = st.sidebar.selectbox(
-        "Hedef Hammadde",
+        "Hammadde Seçimi",
         options=list(ADLAR.keys()),
         format_func=lambda x: f"{ADLAR[x]} ({x.upper()})",
     )
 
     mevcut_modeller = [m for m in MODEL_KATALOGU.keys() if m in tahmin["model"].unique()]
     secili_model = st.sidebar.selectbox(
-        "Aktif Tahmin Modeli",
+        "Aktif Tahmin Algoritması",
         options=mevcut_modeller,
         format_func=lambda x: MODEL_KATALOGU[x]["kisa_ad"],
         index=0,
     )
 
-    # Seçili Modelin Açıklama ve Amaç Kartı
     m_katalog = MODEL_KATALOGU[secili_model]
     st.sidebar.markdown(
-        f"""<div class="sidebar-model-box">
-        <b>Model Mimarisi:</b> {m_katalog['mimari']}<br><br>
-        <b>Kullanım Amacı:</b> {m_katalog['amac']}<br><br>
-        <b>Temel Girdiler:</b> {m_katalog['girdiler']}
+        f"""<div class="sidebar-model-card">
+        <b style="color:#0f172a;">Mimari:</b> {m_katalog['mimari']}<br><br>
+        <b style="color:#0f172a;">Operasyonel Amaç:</b> {m_katalog['amac']}<br><br>
+        <b style="color:#0f172a;">Girdiler:</b> {m_katalog['girdiler']}
         </div>""",
         unsafe_allow_html=True,
     )
 
-    # BÖLÜM 2: OPERASYONEL ENVANTER PARAMETRELERİ
-    st.sidebar.markdown('<div class="sidebar-section-title">2. Operasyonel Parametreler</div>', unsafe_allow_html=True)
+    st.sidebar.markdown('<div class="sidebar-section">Operasyonel Kısıtlar</div>', unsafe_allow_html=True)
 
     s_carpan = st.sidebar.select_slider(
-        "Sabit Sipariş Maliyeti Çarpanı (S)",
+        "Sipariş Maliyeti Çarpanı (S)",
         options=[1, 5, 10],
         value=5,
-        help="1x: Yerel Tedarik ($300-$500), 5x: Bölgesel/Konteyner ($1500-$2500), 10x: Küresel İthalat ($3000-$5000)",
     )
 
     hizmet_secim = st.sidebar.select_slider(
-        "Hedef Hizmet Düzeyi (Service Level)",
+        "Hedef Hizmet Düzeyi",
         options=["%90 (Z=1.28)", "%95 (Z=1.65)", "%99 (Z=2.33)"],
         value="%95 (Z=1.65)",
     )
@@ -459,8 +576,7 @@ def main():
     env_tablo = envanter_tablosu_uret(ham, fiyat, tuketim, s_carpan=float(s_carpan), z_skor_hizmet=z_degeri)
     m_bilgi = env_tablo.loc[secili_hid]
 
-    # BÖLÜM 3: CANLI DEPO VE DUYARLILIK SİMÜLASYONU
-    st.sidebar.markdown('<div class="sidebar-section-title">3. Depo ve Sinyal Kalibrasyonu</div>', unsafe_allow_html=True)
+    st.sidebar.markdown('<div class="sidebar-section">Canlı Depo Kalibrasyonu</div>', unsafe_allow_html=True)
 
     mevcut_stok = st.sidebar.number_input(
         f"Mevcut {m_bilgi['hammadde']} Stoğu (Ton)",
@@ -468,7 +584,6 @@ def main():
         max_value=float(round(m_bilgi["ROP_ton"] * 3.0, 0)),
         value=float(round(m_bilgi["ROP_ton"] * 0.90, 1)),
         step=5.0,
-        help="Depodaki anlık kullanılabilir fiziksel stok + yoldaki sipariş miktarı.",
     )
 
     beta_agresiflik = st.sidebar.slider(
@@ -477,11 +592,10 @@ def main():
         max_value=0.60,
         value=0.35,
         step=0.05,
-        help="Modelin fiyat değişim sinyaline göre EOQ ve ROP değerlerini maksimum esnetme oranı.",
     )
 
     # =========================================================================
-    # CANLI KARAR HESAPLAMALARI
+    # CANLI HESAPLAMALAR
     # =========================================================================
     tah_h1 = tahmin[(tahmin["hammadde_id"] == secili_hid) & (tahmin["model"] == secili_model) & (tahmin["ufuk"] == 1)]
     tah_h3 = tahmin[(tahmin["hammadde_id"] == secili_hid) & (tahmin["model"] == secili_model) & (tahmin["ufuk"] == 3)]
@@ -508,100 +622,195 @@ def main():
     beklenen_1ay_pct = (np.exp(son_dlog1) - 1.0) * 100.0
     beklenen_3ay_pct = (np.exp(son_dlog3) - 1.0) * 100.0
     hedef_fiyat_3ay = m_bilgi["guncel_fiyat_usd"] * np.exp(son_dlog3)
+    fiyat_fark_12a_pct = ((m_bilgi["guncel_fiyat_usd"] / m_bilgi["ort_fiyat_usd"]) - 1.0) * 100.0
+    eoq_degisim_pct = ((ai_eoq / klasik_eoq) - 1.0) * 100.0
 
     # =========================================================================
-    # EN ÜST KURUMSAL BAŞLIK VE ANA NAVİGASYON SEKMELERİ
+    # ÜST BREADCRUMB BAŞLIK VE HAP SEKMELER (MATERIAL TOPBAR)
     # =========================================================================
     st.markdown(
-        f"""<div class="corp-header">
+        f"""<div class="top-navbar">
             <div>
-                <div class="corp-title">GRRA | YAPAY ZEKA DESTEKLİ SATIN ALMA VE ENVANTER KARAR DESTEK SİSTEMİ</div>
-                <div class="corp-subtitle">Kantitatif Fiyat Tahmini, Dinamik EOQ/ROP Optimizasyonu ve Stokastik Politika Simülasyonu</div>
+                <div class="breadcrumb">Modüller &nbsp;/&nbsp; <span>Satın Alma ve Envanter Kontrol Paneli</span></div>
+                <div class="page-title">{m_bilgi['hammadde']} Tedarik ve Optimizasyon Kokpiti</div>
+                <div class="page-subtitle">Kantitatif fiyat sinyalleri, dinamik EOQ/ROP karar motoru ve Monte Carlo maliyet doğrulaması.</div>
             </div>
-            <div class="corp-badges">
-                <div class="corp-badge">Emtia: <b>{m_bilgi['hammadde']} ({m_bilgi['ABC']} Sınıfı)</b></div>
-                <div class="corp-badge">Model: <b>{secili_model.upper()}</b></div>
-                <div class="corp-badge">Sipariş Maliyeti: <b>${m_bilgi['siparis_maliyeti_usd']:,.0f} ({s_carpan}x)</b></div>
+            <div class="status-pills">
+                <div class="status-pill">ABC Sınıfı: <b>{m_bilgi['ABC']} (%{m_bilgi['butce_payi_pct']} Bütçe)</b></div>
+                <div class="status-pill">Aktif Model: <b>{secili_model}</b></div>
+                <div class="status-pill">Sipariş Maliyeti: <b>${m_bilgi['siparis_maliyeti_usd']:,.0f} ({s_carpan}x)</b></div>
             </div>
         </div>""",
         unsafe_allow_html=True,
     )
 
-    # EN ÜSTTEKİ 5 ANA MODÜL SEKMESİ
     tab1, tab2, tab3, tab4, tab5 = st.tabs([
-        "1. Satın Alma Karar Merkezi ve Sinyal Analizi",
-        "2. Fiyat Tahmini ve Şok Dönemi Analizi",
-        "3. Politika Simülasyonu ve Backtest",
-        "4. İstatistiksel Doğrulama ve Model Rehberi",
-        "5. Envanter Parametreleri ve ABC Analizi",
+        "Karar Kokpiti ve Sinyal Analizi",
+        "Fiyat Tahmini ve Şok Analizi",
+        "Politika Simülasyonu ve Backtest",
+        "İstatistiksel Doğrulama (DM Testi)",
+        "Envanter Parametreleri ve ABC",
     ])
 
     # =========================================================================
-    # SEKME 1: SATIN ALMA KARAR MERKEZİ, TEDARİK EMRİ VE SİNYAL ANALİZİ
+    # SEKME 1: KARAR KOKPİTİ (GÖRSELDEKİ 4'LÜ KPI + 3'LÜ GRAFİK KART DÜZENİ)
     # =========================================================================
     with tab1:
-        # 5 KPI KARTI
-        k1, k2, k3, k4, k5 = st.columns(5)
-        k1.metric(
-            "Güncel Spot Fiyat",
-            f"${m_bilgi['guncel_fiyat_usd']:,.1f} /ton",
-            f"{m_bilgi['guncel_fiyat_usd'] - m_bilgi['ort_fiyat_usd']:+.1f} USD (12A Ort. Farkı)",
-        )
-        k2.metric(
-            "3 Aylık Hedef Fiyat",
-            f"${hedef_fiyat_3ay:,.1f} /ton",
-            f"%{beklenen_3ay_pct:+.2f} ({'Artış Yönlü' if beklenen_3ay_pct >= 0 else 'Düşüş Yönlü'})",
-        )
-        k3.metric(
-            "Dinamik Sipariş Noktası (ROP)",
-            f"{ai_rop:.1f} Ton",
-            f"{ai_rop - klasik_rop:+.1f} Ton (Klasik: {klasik_rop:.1f})",
-        )
-        k4.metric(
-            "Spekülatif Parti Miktarı (EOQ)",
-            f"{ai_eoq:.1f} Ton",
-            f"%{((ai_eoq / klasik_eoq) - 1.0) * 100:+.1f} (Klasik: {klasik_eoq:.1f})",
-        )
-        k5.metric(
-            f"Güvenlik Stoğu ({hizmet_secim[:3]})",
-            f"{m_bilgi['guvenlik_stogu_ton']:.1f} Ton",
-            f"Aylık Talep: {d_aylik:.0f} ± {m_bilgi['talep_std_ton']:.0f} Ton",
-        )
+        # 1. SATIR: GÖRSELDEKİ SAĞ ÜSTÜ SİYAH ROZETLİ 4 KPI KARTI
+        k1, k2, k3, k4 = st.columns(4)
+        with k1:
+            material_kpi_karti(
+                baslik="Güncel Spot Fiyat",
+                deger=f"${m_bilgi['guncel_fiyat_usd']:,.1f}",
+                rozet="USD",
+                alt_vurgulu=f"%{fiyat_fark_12a_pct:+.1f}",
+                alt_aciklama="son 12 aylık ortalamaya göre",
+                durum="neg" if fiyat_fark_12a_pct > 0 else "pos",
+            )
+        with k2:
+            material_kpi_karti(
+                baslik="3 Aylık Hedef Fiyat",
+                deger=f"${hedef_fiyat_3ay:,.1f}",
+                rozet="3AY",
+                alt_vurgulu=f"%{beklenen_3ay_pct:+.2f}",
+                alt_aciklama=f"beklenen değişim ({secili_model})",
+                durum="neg" if beklenen_3ay_pct > 0 else "pos",
+            )
+        with k3:
+            material_kpi_karti(
+                baslik="Dinamik Sipariş Eşiği (ROP)",
+                deger=f"{ai_rop:.1f} T",
+                rozet="ROP",
+                alt_vurgulu=f"{ai_rop - klasik_rop:+.1f} Ton",
+                alt_aciklama=f"klasik ROP'a göre ({klasik_rop:.1f} T)",
+                durum="neutral",
+            )
+        with k4:
+            material_kpi_karti(
+                baslik="Spekülatif Parti (AI EOQ)",
+                deger=f"{ai_eoq:.1f} T",
+                rozet="EOQ",
+                alt_vurgulu=f"%{eoq_degisim_pct:+.1f}",
+                alt_aciklama=f"klasik EOQ'ya göre ({klasik_eoq:.1f} T)",
+                durum="pos" if eoq_degisim_pct >= 0 else "neutral",
+            )
 
-        # KURUMSAL ERP TEDARİK EMRİ FİŞİ (PROCUREMENT REQUISITION SLIP)
+        # 2. SATIR: GÖRSELDEKİ 3 YAN YANA BEYAZ GRAFİK KARTI (SİNYAL, XAI, BACKTEST ÖZETİ)
+        c_card1, c_card2, c_card3 = st.columns(3)
+
+        with c_card1:
+            with st.container(border=True):
+                st.markdown('<div class="card-title">Kantitatif Faktör Ayrıştırması</div>', unsafe_allow_html=True)
+                st.markdown(f'<div class="card-subtitle">Bileşik Sinyal Gücü: <b>{z_sinyal:+.2f} σ</b> (Anlık Z-Skoru)</div>', unsafe_allow_html=True)
+
+                faktorler = canli_faktoru_cozumle(fiyat, dis_df, secili_hid)
+                f_df = pd.DataFrame({
+                    "Faktör": [
+                        "Maliyet Marjı", "MR120 (10Y)", "MR60 (5Y)",
+                        "Vol-MACD", "Momentum (3A)", "Makro İvme"
+                    ],
+                    "Z_Skoru": list(faktorler.values()),
+                })
+                renkler = ["#16a34a" if v >= 0 else "#334155" for v in f_df["Z_Skoru"]]
+
+                fig_f = go.Figure(go.Bar(
+                    x=f_df["Faktör"], y=f_df["Z_Skoru"],
+                    marker_color=renkler, marker_line_width=0, width=0.52,
+                ))
+                fig_f.add_hline(y=0, line_color="#cbd5e1", line_width=1)
+                fig_f.update_layout(
+                    template="plotly_white", height=230,
+                    margin=dict(l=10, r=10, t=10, b=10),
+                    yaxis=dict(range=[-3.0, 3.0], gridcolor="#f1f5f9", title=""),
+                    xaxis=dict(title="", tickfont=dict(size=10)),
+                )
+                st.plotly_chart(fig_f, use_container_width=True)
+                st.markdown('<div class="card-footer">Güncelleme: Aylık ve dışsal makro seriler aktif</div>', unsafe_allow_html=True)
+
+        with c_card2:
+            with st.container(border=True):
+                st.markdown('<div class="card-title">Fiyat Trendi ve 3 Aylık Tahmin</div>', unsafe_allow_html=True)
+                st.markdown(f'<div class="card-subtitle">Son 36 aylık gerçekleşen ve tahmin edilen yörünge</div>', unsafe_allow_html=True)
+
+                t3_kisa = tahmin[
+                    (tahmin["hammadde_id"] == secili_hid)
+                    & (tahmin["model"] == secili_model)
+                    & (tahmin["ufuk"] == 3)
+                ].tail(36)
+
+                fig_tr = go.Figure()
+                if not t3_kisa.empty:
+                    fig_tr.add_trace(go.Scatter(
+                        x=t3_kisa["hedef_tarih"], y=t3_kisa["gercek_fiyat"],
+                        mode="lines+markers", name="Gerçek",
+                        line=dict(color="#16a34a", width=2.2), marker=dict(size=4),
+                    ))
+                    fig_tr.add_trace(go.Scatter(
+                        x=t3_kisa["hedef_tarih"], y=t3_kisa["tahmin_fiyat"],
+                        mode="lines", name="AI Tahmin",
+                        line=dict(color="#1e293b", width=1.8, dash="dot"),
+                    ))
+                fig_tr.update_layout(
+                    template="plotly_white", height=230, showlegend=False,
+                    margin=dict(l=10, r=10, t=10, b=10),
+                    yaxis=dict(gridcolor="#f1f5f9", title=""),
+                    xaxis=dict(title="", tickfont=dict(size=10)),
+                )
+                st.plotly_chart(fig_tr, use_container_width=True)
+                st.markdown(f'<div class="card-footer">Model: {m_katalog["kisa_ad"]}</div>', unsafe_allow_html=True)
+
+        with c_card3:
+            with st.container(border=True):
+                st.markdown('<div class="card-title">Depo Stok Yolu (Son 36 Ay)</div>', unsafe_allow_html=True)
+                st.markdown(f'<div class="card-subtitle">Güvenlik Stoğu: <b>{m_bilgi["guvenlik_stogu_ton"]:.1f} T</b> | Hizmet: <b>{hizmet_secim[:3]}</b></div>', unsafe_allow_html=True)
+
+                st_kisa = sim_stok[
+                    (sim_stok["hammadde_id"] == secili_hid)
+                    & (sim_stok["politika"] == secili_model)
+                ].tail(36)
+                if st_kisa.empty:
+                    st_kisa = sim_stok[(sim_stok["hammadde_id"] == secili_hid) & (sim_stok["politika"] == "rop_eoq")].tail(36)
+
+                fig_st_mini = go.Figure()
+                if not st_kisa.empty:
+                    fig_st_mini.add_trace(go.Scatter(
+                        x=st_kisa["tarih"], y=st_kisa["stok_ton"],
+                        mode="lines+markers", name="Stok (Ton)",
+                        line=dict(color="#16a34a", width=2.2), marker=dict(size=4),
+                    ))
+                    fig_st_mini.add_hline(y=m_bilgi["guvenlik_stogu_ton"], line_dash="dash", line_color="#94a3b8")
+                fig_st_mini.update_layout(
+                    template="plotly_white", height=230, showlegend=False,
+                    margin=dict(l=10, r=10, t=10, b=10),
+                    yaxis=dict(gridcolor="#f1f5f9", title=""),
+                    xaxis=dict(title="", tickfont=dict(size=10)),
+                )
+                st.plotly_chart(fig_st_mini, use_container_width=True)
+                st.markdown('<div class="card-footer">Simülasyon: 200 stokastik talep senaryosu</div>', unsafe_allow_html=True)
+
+        # 3. SATIR: KURUMSAL TEDARİK EMRİ KARTI (ALT BÖLÜM)
         if mevcut_stok <= ai_rop:
             onerilen_miktar = max(ai_eoq, ai_rop - mevcut_stok + ai_eoq * 0.5)
             fatura_usd = onerilen_miktar * m_bilgi["guncel_fiyat_usd"]
             fark_ton = ai_eoq - klasik_eoq
             st.markdown(
-                f"""<div class="erp-order-card">
-                    <div class="erp-header-buy">
-                        <span>KURUMSAL TEDARİK EMRİ FİŞİ — DURUM: SİPARİŞ TETİKLENDİ (ONAY BEKLİYOR)</span>
-                        <span>BELGE KODU: GRRA-PR-{secili_hid.upper()}-{s_carpan}X</span>
+                f"""<div class="order-banner">
+                    <div class="order-banner-head">
+                        <div>
+                            <div class="card-title">Kurumsal Tedarik Emri ve Operasyonel Reçete</div>
+                            <div class="card-subtitle" style="margin-bottom:0;">Belge Kodu: GRRA-PR-{secili_hid.upper()}-{s_carpan}X &nbsp;|&nbsp; Aktif Politika: {m_katalog['ad']}</div>
+                        </div>
+                        <div class="order-badge-buy">SİPARİŞ TETİKLENDİ — ONAY BEKLİYOR</div>
                     </div>
-                    <div class="erp-grid">
-                        <div class="erp-cell">
-                            <div class="erp-cell-label">Envanter Dengesi (Stok / Eşik)</div>
-                            <div class="erp-cell-value">{mevcut_stok:.1f} Ton / {ai_rop:.1f} Ton</div>
-                        </div>
-                        <div class="erp-cell">
-                            <div class="erp-cell-label">Önerilen Sipariş Miktarı</div>
-                            <div class="erp-cell-value" style="color:#065f46;">{onerilen_miktar:.1f} Ton (EOQ Farkı: {fark_ton:+.1f} T)</div>
-                        </div>
-                        <div class="erp-cell">
-                            <div class="erp-cell-label">Tahmini Sipariş Tutarı (FOB)</div>
-                            <div class="erp-cell-value">${fatura_usd:,.0f} USD</div>
-                        </div>
-                        <div class="erp-cell">
-                            <div class="erp-cell-label">Kantitatif Sinyal Gücü</div>
-                            <div class="erp-cell-value">Z = {z_sinyal:+.2f} σ (3A: %{beklenen_3ay_pct:+.2f})</div>
-                        </div>
+                    <div class="order-metrics-row">
+                        <div class="order-metric-item"><small>Mevcut Stok / Dinamik ROP</small><span>{mevcut_stok:.1f} T / {ai_rop:.1f} T</span></div>
+                        <div class="order-metric-item"><small>Önerilen Sipariş Miktarı</small><span style="color:#15803d;">{onerilen_miktar:.1f} Ton ({fark_ton:+.1f} T EOQ Farkı)</span></div>
+                        <div class="order-metric-item"><small>Tahmini Fatura Tutarı (FOB)</small><span>${fatura_usd:,.0f} USD</span></div>
+                        <div class="order-metric-item"><small>Bileşik Sinyal Z-Skoru</small><span>{z_sinyal:+.2f} σ (1A: %{beklenen_1ay_pct:+.2f} | 3A: %{beklenen_3ay_pct:+.2f})</span></div>
                     </div>
-                    <div class="erp-rationale">
-                        <b>Karar Gerekçesi ve Operasyonel Talimat:</b> Depodaki kullanılabilir envanter seviyesi ({mevcut_stok:.1f} ton),
-                        <b>{m_katalog['ad']}</b> tarafından hesaplanan dinamik yeniden sipariş noktasının ({ai_rop:.1f} ton) altına inmiştir.
-                        Model 1 aylık ufukta <b>%{beklenen_1ay_pct:+.2f}</b>, 3 aylık ufukta <b>%{beklenen_3ay_pct:+.2f}</b> fiyat değişimi öngörmektedir.
-                        Klasik EOQ politikasına ({klasik_eoq:.1f} ton) kıyasla parti büyüklüğü spekülatif formülle <b>{ai_eoq:.1f} ton</b> olarak optimize edilmiştir.
+                    <div style="font-size:0.86rem; color:#475569; line-height:1.55;">
+                        <b>Karar Gerekçesi:</b> Depodaki kullanılabilir stok seviyesi ({mevcut_stok:.1f} ton), dinamik yeniden sipariş noktasının ({ai_rop:.1f} ton) altındadır.
+                        Klasik EOQ politikasına ({klasik_eoq:.1f} ton) kıyasla sipariş partisi spekülatif formülle <b>{ai_eoq:.1f} ton</b> olarak optimize edilmiştir.
                     </div>
                 </div>""",
                 unsafe_allow_html=True,
@@ -609,287 +818,226 @@ def main():
         else:
             rezerv_fazlasi = mevcut_stok - ai_rop
             st.markdown(
-                f"""<div class="erp-order-card">
-                    <div class="erp-header-hold">
-                        <span>ENVANTER KONTROL RAPORU — DURUM: STOK YETERLİ (SİPARİŞ BEKLEMEDE)</span>
-                        <span>BELGE KODU: GRRA-MON-{secili_hid.upper()}-{s_carpan}X</span>
+                f"""<div class="order-banner">
+                    <div class="order-banner-head">
+                        <div>
+                            <div class="card-title">Kurumsal Tedarik Emri ve Operasyonel Reçete</div>
+                            <div class="card-subtitle" style="margin-bottom:0;">Belge Kodu: GRRA-MON-{secili_hid.upper()}-{s_carpan}X &nbsp;|&nbsp; Aktif Politika: {m_katalog['ad']}</div>
+                        </div>
+                        <div class="order-badge-hold">STOK YETERLİ — SİPARİŞ BEKLEMEDE</div>
                     </div>
-                    <div class="erp-grid">
-                        <div class="erp-cell">
-                            <div class="erp-cell-label">Envanter Dengesi (Stok / Eşik)</div>
-                            <div class="erp-cell-value">{mevcut_stok:.1f} Ton / {ai_rop:.1f} Ton</div>
-                        </div>
-                        <div class="erp-cell">
-                            <div class="erp-cell-label">Kullanılabilir Emniyet Tamponu</div>
-                            <div class="erp-cell-value" style="color:#1e3a8a;">+{rezerv_fazlasi:.1f} Ton (Tetikleme Üstü)</div>
-                        </div>
-                        <div class="erp-cell">
-                            <div class="erp-cell-label">Planlanan Sonraki Parti (AI EOQ)</div>
-                            <div class="erp-cell-value">{ai_eoq:.1f} Ton (${ai_eoq * m_bilgi['guncel_fiyat_usd']:,.0f})</div>
-                        </div>
-                        <div class="erp-cell">
-                            <div class="erp-cell-label">Kantitatif Sinyal Gücü</div>
-                            <div class="erp-cell-value">Z = {z_sinyal:+.2f} σ (3A: %{beklenen_3ay_pct:+.2f})</div>
-                        </div>
+                    <div class="order-metrics-row">
+                        <div class="order-metric-item"><small>Mevcut Stok / Dinamik ROP</small><span>{mevcut_stok:.1f} T / {ai_rop:.1f} T</span></div>
+                        <div class="order-metric-item"><small>Emniyet Tamponu Fazlası</small><span style="color:#0369a1;">+{rezerv_fazlasi:.1f} Ton (Eşik Üstü)</span></div>
+                        <div class="order-metric-item"><small>Planlanan Sonraki Parti</small><span>{ai_eoq:.1f} Ton (${ai_eoq * m_bilgi['guncel_fiyat_usd']:,.0f})</span></div>
+                        <div class="order-metric-item"><small>Bileşik Sinyal Z-Skoru</small><span>{z_sinyal:+.2f} σ (1A: %{beklenen_1ay_pct:+.2f} | 3A: %{beklenen_3ay_pct:+.2f})</span></div>
                     </div>
-                    <div class="erp-rationale">
-                        <b>Karar Gerekçesi ve Operasyonel Talimat:</b> Mevcut envanter pozisyonu ({mevcut_stok:.1f} ton),
-                        <b>{m_katalog['ad']}</b> tarafından belirlenen dinamik sipariş eşiğinin ({ai_rop:.1f} ton) üzerindedir.
+                    <div style="font-size:0.86rem; color:#475569; line-height:1.55;">
+                        <b>Karar Gerekçesi:</b> Mevcut envanter pozisyonu ({mevcut_stok:.1f} ton), dinamik yeniden sipariş eşiğinin ({ai_rop:.1f} ton) üzerindedir.
                         Stok tutma maliyetini (yıllık %{m_bilgi['tutma_orani_pct']}) minimize etmek amacıyla yeni alım emri oluşturulmamıştır.
-                        Stok seviyesi {ai_rop:.1f} tona gerilediğinde {ai_eoq:.1f} tonluk sipariş partisi devreye alınacaktır.
                     </div>
                 </div>""",
                 unsafe_allow_html=True,
             )
 
-        # KANTİTATİF SİNYAL KADRANI VE FAKTÖR AYRIŞTIRMASI
-        col_g1, col_g2 = st.columns([1, 1.45])
-
-        with col_g1:
-            st.markdown("#### Bileşik Fiyat Sinyali Göstergesi (Z-Skoru)")
-            fig_gauge = go.Figure(go.Indicator(
-                mode="gauge+number+delta",
-                value=z_sinyal,
-                number={"suffix": " σ", "font": {"size": 26, "color": "#0f172a"}},
-                delta={"reference": 0.0, "increasing": {"color": "#b91c1c"}, "decreasing": {"color": "#047857"}},
-                title={"text": "Sinyal Ölçeği (-3: Düşüş Beklentisi | +3: Artış Beklentisi)", "font": {"size": 13, "color": "#475569"}},
-                gauge={
-                    "axis": {"range": [-3.0, 3.0], "tickwidth": 1, "tickcolor": "#64748b"},
-                    "bar": {"color": "#0f172a", "thickness": 0.28},
-                    "bgcolor": "white",
-                    "borderwidth": 1,
-                    "bordercolor": "#cbd5e1",
-                    "steps": [
-                        {"range": [-3.0, -1.0], "color": "#d1fae5"},
-                        {"range": [-1.0, 1.0], "color": "#f1f5f9"},
-                        {"range": [1.0, 3.0], "color": "#fee2e2"},
-                    ],
-                    "threshold": {"line": {"color": "#0f172a", "width": 3}, "thickness": 0.75, "value": z_sinyal},
-                },
-            ))
-            fig_gauge.update_layout(template="plotly_white", height=300, margin=dict(l=25, r=25, t=45, b=10))
-            st.plotly_chart(fig_gauge, use_container_width=True)
-            st.caption(
-                "Metodoloji: 1 ve 3 aylık model tahminlerinin tarihsel standart sapmaya bölünmesiyle elde edilen sinyal/gürültü oranıdır. Tanh fonksiyonu ile EOQ ve ROP denklemlerine aktarılır."
-            )
-
-        with col_g2:
-            st.markdown(f"#### Kantitatif Faktör Ayrıştırma Analizi ({m_bilgi['hammadde']})")
-            faktorler = canli_faktoru_cozumle(fiyat, dis_df, secili_hid)
-            f_df = pd.DataFrame({
-                "Faktör": list(faktorler.keys()),
-                "Z_Skoru": list(faktorler.values()),
-            }).sort_values("Z_Skoru", ascending=True)
-            f_df["Yön"] = np.where(f_df["Z_Skoru"] >= 0, "Yukarı Yönlü Fiyat Baskısı (+)", "Aşağı Yönlü Fiyat Baskısı (-)")
-
-            fig_xai = px.bar(
-                f_df, x="Z_Skoru", y="Faktör", orientation="h", color="Yön",
-                text=f_df["Z_Skoru"].apply(lambda x: f"{x:+.2f}"),
-                color_discrete_map={"Yukarı Yönlü Fiyat Baskısı (+)": "#b91c1c", "Aşağı Yönlü Fiyat Baskısı (-)": "#047857"},
-                template="plotly_white",
-            )
-            fig_xai.add_vline(x=0.0, line_width=1.2, line_color="#334155")
-            fig_xai.update_layout(
-                height=330, xaxis_range=[-3.2, 3.2],
-                xaxis_title="Standartlaştırılmış Faktör Değeri (Z-Skoru)",
-                yaxis_title="", legend_title="Etki Yönü",
-                margin=dict(l=10, r=20, t=15, b=20),
-            )
-            st.plotly_chart(fig_xai, use_container_width=True)
-
     # =========================================================================
     # SEKME 2: FİYAT TAHMİN PERFORMANSI VE ŞOK ANALİZİ
     # =========================================================================
     with tab2:
-        ust_c1, ust_c2 = st.columns([3, 1])
-        with ust_c1:
-            st.markdown(f"#### {m_bilgi['hammadde']} — Walk-Forward Fiyat Tahmin Performansı ve Şok Analizi")
-            st.caption(f"Aktif Model: {m_katalog['ad']} | Eğitim: İleriye Doğru Yürüyen Pencere (Veri Sızıntısız)")
-        with ust_c2:
-            secili_ufuk = st.radio("Tahmin Ufku (Ay)", options=[1, 3, 6], index=1, horizontal=True)
+        with st.container(border=True):
+            ust_c1, ust_c2 = st.columns([3, 1])
+            with ust_c1:
+                st.markdown(f'<div class="card-title">{m_bilgi["hammadde"]} — Walk-Forward Fiyat Tahmin Performansı (2012–2024)</div>', unsafe_allow_html=True)
+                st.markdown(f'<div class="card-subtitle">Aktif Model: {m_katalog["ad"]} | Veri Sızıntısız İleriye Doğru Yürüyen Pencere</div>', unsafe_allow_html=True)
+            with ust_c2:
+                secili_ufuk = st.radio("Tahmin Ufku (Ay)", options=[1, 3, 6], index=1, horizontal=True)
 
-        t_df = tahmin[
-            (tahmin["hammadde_id"] == secili_hid)
-            & (tahmin["model"] == secili_model)
-            & (tahmin["ufuk"] == secili_ufuk)
-        ].copy()
+            t_df = tahmin[
+                (tahmin["hammadde_id"] == secili_hid)
+                & (tahmin["model"] == secili_model)
+                & (tahmin["ufuk"] == secili_ufuk)
+            ].copy()
 
-        if not t_df.empty:
-            fig_fiyat = make_subplots(
-                rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.08,
-                row_heights=[0.68, 0.32],
-                subplot_titles=(
-                    f"{m_bilgi['hammadde']} Spot Fiyat Serisi ve {secili_ufuk} Aylık Walk-Forward Tahmin (USD/Ton)",
-                    "Gerçekleşen ve Tahmin Edilen Logaritmik Fiyat Değişimi (%)",
-                ),
-            )
-            fig_fiyat.add_trace(
-                go.Scatter(x=t_df["hedef_tarih"], y=t_df["gercek_fiyat"], mode="lines",
-                           name="Gerçekleşen Spot Fiyat", line=dict(color="#0f172a", width=2.0)),
-                row=1, col=1,
-            )
-            fig_fiyat.add_trace(
-                go.Scatter(x=t_df["hedef_tarih"], y=t_df["tahmin_fiyat"], mode="lines",
-                           name=f"Model Tahmini ({secili_model})", line=dict(color="#2563eb", width=1.8, dash="dot")),
-                row=1, col=1,
-            )
-            fig_fiyat.add_vrect(
-                x0="2021-06-01", x1="2023-06-01", fillcolor="#cbd5e1", opacity=0.35, line_width=0,
-                annotation_text="2021-2023 Küresel Arz ve Enerji Şoku Dönemi", annotation_position="top left",
-                row=1, col=1,
-            )
-
-            fig_fiyat.add_trace(
-                go.Bar(x=t_df["hedef_tarih"], y=t_df["gercek_log_degisim"] * 100,
-                       name="Gerçek Değişim (%)", marker_color="#94a3b8"),
-                row=2, col=1,
-            )
-            fig_fiyat.add_trace(
-                go.Scatter(x=t_df["hedef_tarih"], y=t_df["tahmin_log_degisim"] * 100, mode="lines",
-                           name="Tahmin Edilen Değişim (%)", line=dict(color="#b91c1c", width=1.6)),
-                row=2, col=1,
-            )
-            fig_fiyat.update_layout(template="plotly_white", height=540, hovermode="x unified", margin=dict(l=20, r=20, t=40, b=20))
-            st.plotly_chart(fig_fiyat, use_container_width=True)
+            if not t_df.empty:
+                fig_fiyat = make_subplots(
+                    rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.08,
+                    row_heights=[0.68, 0.32],
+                    subplot_titles=(
+                        f"{m_bilgi['hammadde']} Spot Fiyat Serisi ve {secili_ufuk} Aylık Walk-Forward Tahmin (USD/Ton)",
+                        "Gerçekleşen ve Tahmin Edilen Logaritmik Fiyat Değişimi (%)",
+                    ),
+                )
+                fig_fiyat.add_trace(
+                    go.Scatter(x=t_df["hedef_tarih"], y=t_df["gercek_fiyat"], mode="lines",
+                               name="Gerçekleşen Spot Fiyat", line=dict(color="#1e293b", width=2.2)),
+                    row=1, col=1,
+                )
+                fig_fiyat.add_trace(
+                    go.Scatter(x=t_df["hedef_tarih"], y=t_df["tahmin_fiyat"], mode="lines",
+                               name=f"Model Tahmini ({secili_model})", line=dict(color="#16a34a", width=2.0, dash="dot")),
+                    row=1, col=1,
+                )
+                fig_fiyat.add_vrect(
+                    x0="2021-06-01", x1="2023-06-01", fillcolor="#cbd5e1", opacity=0.30, line_width=0,
+                    annotation_text="2021-2023 Küresel Arz ve Enerji Şoku", annotation_position="top left",
+                    row=1, col=1,
+                )
+                fig_fiyat.add_trace(
+                    go.Bar(x=t_df["hedef_tarih"], y=t_df["gercek_log_degisim"] * 100,
+                           name="Gerçek Değişim (%)", marker_color="#cbd5e1"),
+                    row=2, col=1,
+                )
+                fig_fiyat.add_trace(
+                    go.Scatter(x=t_df["hedef_tarih"], y=t_df["tahmin_log_degisim"] * 100, mode="lines",
+                               name="Tahmin Edilen Değişim (%)", line=dict(color="#16a34a", width=1.8)),
+                    row=2, col=1,
+                )
+                fig_fiyat.update_layout(template="plotly_white", height=520, hovermode="x unified", margin=dict(l=15, r=15, t=40, b=15))
+                st.plotly_chart(fig_fiyat, use_container_width=True)
 
     # =========================================================================
     # SEKME 3: MONTE CARLO SİMÜLASYONU VE MALİYET TASARRUFU (BACKTEST)
     # =========================================================================
     with tab3:
-        st.markdown(f"#### 2020–2024 Test Dönemi Maliyet Analizi (200 Talep Senaryosu — {s_carpan}x Sipariş Maliyeti)")
+        sc1, sc2 = st.columns([1.35, 1])
         if not sim_ozet.empty:
             s_sub = sim_ozet[(sim_ozet["S_carpani"] == s_carpan) & (sim_ozet["hammadde"] == secili_hid)].copy()
-            sc1, sc2 = st.columns([1.35, 1])
 
             with sc1:
-                goster_kol = ["politika", "net_maliyet_usd", "tasarruf_usd", "rop_eoq_e_gore_pct", "ci95_alt", "ci95_ust", "hizmet_duzeyi", "yillik_siparis"]
-                st.dataframe(
-                    s_sub[goster_kol].rename(columns={
-                        "politika": "Politika",
-                        "net_maliyet_usd": "Net Maliyet (USD)",
-                        "tasarruf_usd": "Net Tasarruf (USD)",
-                        "rop_eoq_e_gore_pct": "ROP-EOQ Farkı (%)",
-                        "ci95_alt": "%95 GA Alt",
-                        "ci95_ust": "%95 GA Üst",
-                        "hizmet_duzeyi": "Hizmet Düzeyi",
-                        "yillik_siparis": "Yıllık Sipariş",
-                    }),
-                    use_container_width=True, hide_index=True,
-                )
-                st.caption(
-                    "Muhasebe Denklemi: Net Ekonomik Maliyet = Toplam Nakit Çıkışı (Alım + Sipariş + Tutma + Acil Prim) - (Dönem Sonu Stok Değeri - Dönem Başı Stok Değeri). %95 Güven Aralığı (GA) sıfırı kesmiyorsa tasarruf istatistiksel olarak anlamlıdır."
-                )
+                with st.container(border=True):
+                    st.markdown(f'<div class="card-title">2020–2024 Test Dönemi Maliyet Tablosu ({s_carpan}x Sipariş Maliyeti)</div>', unsafe_allow_html=True)
+                    st.markdown('<div class="card-subtitle">200 eşleştirilmiş Monte Carlo talep senaryosu üzerinden net ekonomik maliyetler</div>', unsafe_allow_html=True)
+                    goster_kol = ["politika", "net_maliyet_usd", "tasarruf_usd", "rop_eoq_e_gore_pct", "ci95_alt", "ci95_ust", "hizmet_duzeyi", "yillik_siparis"]
+                    st.dataframe(
+                        s_sub[goster_kol].rename(columns={
+                            "politika": "Politika",
+                            "net_maliyet_usd": "Net Maliyet ($)",
+                            "tasarruf_usd": "Net Tasarruf ($)",
+                            "rop_eoq_e_gore_pct": "ROP-EOQ Farkı (%)",
+                            "ci95_alt": "%95 GA Alt",
+                            "ci95_ust": "%95 GA Üst",
+                            "hizmet_duzeyi": "Hizmet Düzeyi",
+                            "yillik_siparis": "Yıllık Sipariş",
+                        }),
+                        use_container_width=True, hide_index=True,
+                    )
+                    st.markdown('<div class="card-footer">Net Maliyet = Nakit Çıkışı - Dönem Sonu/Başı Stok Değer Farkı</div>', unsafe_allow_html=True)
 
             with sc2:
-                s_plot = s_sub[~s_sub["politika"].isin(["mukemmel", "rop_eoq"])].copy()
-                s_plot["Durum"] = np.where(s_plot["tasarruf_usd"] >= 0, "Maliyet Tasarrufu (+)", "Ek Maliyet (-)")
-                fig_tas = px.bar(
-                    s_plot, x="politika", y="tasarruf_usd", color="Durum",
-                    color_discrete_map={"Maliyet Tasarrufu (+)": "#047857", "Ek Maliyet (-)": "#b91c1c"},
-                    text=s_plot["tasarruf_usd"].apply(lambda v: f"${v:+,.0f}"),
-                    title=f"{m_bilgi['hammadde']} ({s_carpan}x) — Klasik ROP-EOQ'ya Göre Net Tasarruf (USD)",
-                    labels={"politika": "Politika", "tasarruf_usd": "Net Tasarruf (USD)"},
-                    template="plotly_white",
-                )
-                fig_tas.add_hline(y=0, line_color="#0f172a", line_width=1.2)
-                fig_tas.update_layout(height=310, showlegend=False, margin=dict(l=10, r=10, t=40, b=10))
-                st.plotly_chart(fig_tas, use_container_width=True)
+                with st.container(border=True):
+                    st.markdown(f'<div class="card-title">Klasik ROP-EOQ\'ya Göre Net Tasarruf (USD)</div>', unsafe_allow_html=True)
+                    st.markdown(f'<div class="card-subtitle">{m_bilgi["hammadde"]} ({s_carpan}x) senaryosunda modellerin nakit katkısı</div>', unsafe_allow_html=True)
+                    s_plot = s_sub[~s_sub["politika"].isin(["mukemmel", "rop_eoq"])].copy()
+                    renk_bar = ["#16a34a" if v >= 0 else "#dc2626" for v in s_plot["tasarruf_usd"]]
+                    fig_tas = go.Figure(go.Bar(
+                        x=s_plot["politika"], y=s_plot["tasarruf_usd"],
+                        marker_color=renk_bar, width=0.48,
+                        text=s_plot["tasarruf_usd"].apply(lambda v: f"${v:+,.0f}"),
+                        textposition="auto",
+                    ))
+                    fig_tas.add_hline(y=0, line_color="#1e293b", line_width=1.2)
+                    fig_tas.update_layout(template="plotly_white", height=295, margin=dict(l=10, r=10, t=10, b=10))
+                    st.plotly_chart(fig_tas, use_container_width=True)
+                    st.markdown('<div class="card-footer">Pozitif değerler klasik EOQ politikasına göre net kârı gösterir</div>', unsafe_allow_html=True)
 
-        st.markdown("---")
-        st.markdown("#### Depo Stok Seviyesi ve Sipariş Zamanlaması (Klasik ROP-EOQ vs. Seçili Model Politikası)")
-        st_rop = sim_stok[(sim_stok["hammadde_id"] == secili_hid) & (sim_stok["politika"] == "rop_eoq")]
-        st_ai = sim_stok[(sim_stok["hammadde_id"] == secili_hid) & (sim_stok["politika"] == secili_model)]
-        sp_ai = sim_siparis[(sim_siparis["hammadde_id"] == secili_hid) & (sim_siparis["politika"] == secili_model)]
+        with st.container(border=True):
+            st.markdown('<div class="card-title">Depo Stok Seviyesi ve Sipariş Zamanlaması Karşılaştırması</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="card-subtitle">Klasik ROP-EOQ politikası ile {secili_model} politikasının 2015–2024 stok yörüngesi</div>', unsafe_allow_html=True)
+            st_rop = sim_stok[(sim_stok["hammadde_id"] == secili_hid) & (sim_stok["politika"] == "rop_eoq")]
+            st_ai = sim_stok[(sim_stok["hammadde_id"] == secili_hid) & (sim_stok["politika"] == secili_model)]
+            sp_ai = sim_siparis[(sim_siparis["hammadde_id"] == secili_hid) & (sim_siparis["politika"] == secili_model)]
 
-        if not st_rop.empty and not st_ai.empty:
-            fig_stok = go.Figure()
-            fig_stok.add_trace(go.Scatter(
-                x=st_rop["tarih"], y=st_rop["stok_ton"],
-                mode="lines", name="Klasik ROP-EOQ Stoğu (Ton)",
-                line=dict(color="#64748b", width=1.5, dash="dash"),
-            ))
-            fig_stok.add_trace(go.Scatter(
-                x=st_ai["tarih"], y=st_ai["stok_ton"],
-                mode="lines", name=f"Dinamik Politika Stoğu ({secili_model})",
-                line=dict(color="#0f172a", width=2.0),
-            ))
-            if not sp_ai.empty:
-                fig_stok.add_trace(
-                    go.Scatter(
+            if not st_rop.empty and not st_ai.empty:
+                fig_stok = go.Figure()
+                fig_stok.add_trace(go.Scatter(
+                    x=st_rop["tarih"], y=st_rop["stok_ton"],
+                    mode="lines", name="Klasik ROP-EOQ Stoğu (Ton)",
+                    line=dict(color="#94a3b8", width=1.5, dash="dash"),
+                ))
+                fig_stok.add_trace(go.Scatter(
+                    x=st_ai["tarih"], y=st_ai["stok_ton"],
+                    mode="lines", name=f"Dinamik Politika Stoğu ({secili_model})",
+                    line=dict(color="#16a34a", width=2.2),
+                ))
+                if not sp_ai.empty:
+                    fig_stok.add_trace(go.Scatter(
                         x=sp_ai["tarih"], y=sp_ai["miktar_ton"],
                         mode="markers", name="Sipariş Parti Miktarı (Ton)",
-                        marker=dict(color="#2563eb", size=8, symbol="diamond"),
-                    )
-                )
-            fig_stok.add_vline(x="2020-01-01", line_dash="dot", line_color="#475569")
-            fig_stok.update_layout(
-                template="plotly_white", height=380,
-                xaxis_title="Tarih (2015-2019 Kalibrasyon Dönemi | 2020-2024 Test Dönemi)",
-                yaxis_title="Miktar (Ton)", hovermode="x unified",
-            )
-            st.plotly_chart(fig_stok, use_container_width=True)
+                        marker=dict(color="#1e293b", size=7, symbol="diamond"),
+                    ))
+                fig_stok.add_vline(x="2020-01-01", line_dash="dot", line_color="#64748b")
+                fig_stok.update_layout(template="plotly_white", height=350, hovermode="x unified", margin=dict(l=10, r=10, t=10, b=10))
+                st.plotly_chart(fig_stok, use_container_width=True)
 
     # =========================================================================
     # SEKME 4: İSTATİSTİKSEL DOĞRULAMA (DM TESTİ) VE MODEL REHBERİ
     # =========================================================================
     with tab4:
-        st.markdown("#### Sistemde Yer Alan Tahmin Modellerinin Metodolojik Rehberi ve Amaçları")
-        rehber_satirlar = []
-        for kod, d in MODEL_KATALOGU.items():
-            rehber_satirlar.append({
-                "Model Kodu": kod,
-                "Model Adı": d["ad"],
-                "Matematiksel Mimari": d["mimari"],
-                "Kullanılan Değişkenler ve Formüller": d["girdiler"],
-                "Temel Operasyonel Amacı": d["amac"],
-                "En Uygun Piyasa Rejimi": d["rejim"],
-            })
-        st.dataframe(pd.DataFrame(rehber_satirlar), use_container_width=True, hide_index=True)
+        with st.container(border=True):
+            st.markdown('<div class="card-title">Tahmin Modellerinin Metodolojik Rehberi ve Operasyonel Amaçları</div>', unsafe_allow_html=True)
+            st.markdown('<div class="card-subtitle">Sistemde yer alan algoritmaların matematiksel mimarisi ve uygun piyasa rejimleri</div>', unsafe_allow_html=True)
+            rehber_satirlar = [
+                {
+                    "Model Kodu": kod,
+                    "Model Adı": d["ad"],
+                    "Matematiksel Mimari": d["mimari"],
+                    "Kullanılan Değişkenler": d["girdiler"],
+                    "Operasyonel Amacı": d["amac"],
+                }
+                for kod, d in MODEL_KATALOGU.items()
+            ]
+            st.dataframe(pd.DataFrame(rehber_satirlar), use_container_width=True, hide_index=True)
 
-        st.markdown("---")
-        st.markdown("#### Walk-Forward Tahmin Performansı ve Bartlett-HLN Diebold-Mariano İstatistiksel Test Sonuçları")
         if not tah_ozet.empty:
             col_d1, col_d2 = st.columns([1.4, 1])
             with col_d1:
-                st.dataframe(tah_ozet, use_container_width=True, hide_index=True)
+                with st.container(border=True):
+                    st.markdown('<div class="card-title">Walk-Forward ve Diebold-Mariano (Bartlett-HLN) Sonuçları</div>', unsafe_allow_html=True)
+                    st.markdown('<div class="card-subtitle">1, 3 ve 6 aylık ufuklarda tüm modellerin hata ve yön doğruluğu metrikleri</div>', unsafe_allow_html=True)
+                    st.dataframe(tah_ozet, use_container_width=True, hide_index=True)
             with col_d2:
-                t3_all = tah_ozet[tah_ozet["ufuk_ay"] == 3].copy()
-                fig_yon = px.bar(
-                    t3_all, x="hammadde", y="yon_dogrulugu", color="model", barmode="group",
-                    title="3 Aylık Tahmin Ufkunda Yön Doğruluğu (Directional Accuracy)",
-                    labels={"hammadde": "Hammadde", "yon_dogrulugu": "Yön Doğruluğu Oranı", "model": "Model"},
-                    template="plotly_white",
-                    color_discrete_sequence=["#0f172a", "#2563eb", "#047857", "#64748b", "#94a3b8", "#cbd5e1"],
-                )
-                fig_yon.add_hline(y=0.50, line_dash="dash", line_color="#b91c1c", annotation_text="%50 Referans Sınırı")
-                fig_yon.update_layout(height=390, yaxis_range=[0.40, 0.62])
-                st.plotly_chart(fig_yon, use_container_width=True)
+                with st.container(border=True):
+                    st.markdown('<div class="card-title">3 Aylık Ufukta Yön Doğruluğu Kıyaslaması</div>', unsafe_allow_html=True)
+                    st.markdown('<div class="card-subtitle">%50 rastgele yürüyüş eşiğine göre yön başarısı</div>', unsafe_allow_html=True)
+                    t3_all = tah_ozet[tah_ozet["ufuk_ay"] == 3].copy()
+                    fig_yon = px.bar(
+                        t3_all, x="hammadde", y="yon_dogrulugu", color="model", barmode="group",
+                        template="plotly_white",
+                        color_discrete_sequence=["#16a34a", "#1e293b", "#2563eb", "#64748b", "#94a3b8", "#cbd5e1"],
+                    )
+                    fig_yon.add_hline(y=0.50, line_dash="dash", line_color="#dc2626")
+                    fig_yon.update_layout(height=360, yaxis_range=[0.40, 0.63], margin=dict(l=10, r=10, t=10, b=10))
+                    st.plotly_chart(fig_yon, use_container_width=True)
 
     # =========================================================================
-    # SEKME 5: ÇOKLU HAMMADDE, ABC ANALİZİ VE RAPOR İNDİRME
+    # SEKME 5: ENVANTER PARAMETRELERİ VE ABC ANALİZİ
     # =========================================================================
     with tab5:
-        st.markdown("#### Envanter Parametreleri Özeti ve ABC Bütçe Sınıflandırması")
         ca1, ca2 = st.columns([1.45, 1])
         with ca1:
-            st.dataframe(env_tablo.reset_index(drop=True), use_container_width=True, hide_index=True)
-            csv_data = env_tablo.reset_index().to_csv(index=False).encode("utf-8")
-            st.download_button(
-                label="Envanter Parametreleri Tablosunu İndir (CSV)",
-                data=csv_data,
-                file_name=f"GRRA_Envanter_Parametreleri_{s_carpan}x.csv",
-                mime="text/csv",
-            )
+            with st.container(border=True):
+                st.markdown('<div class="card-title">Şirket Envanter Parametreleri ve Optimal EOQ/ROP Özeti</div>', unsafe_allow_html=True)
+                st.markdown('<div class="card-subtitle">Yıllık tüketim, sabit sipariş maliyeti ve tutma oranlarına göre hesaplanan temel değerler</div>', unsafe_allow_html=True)
+                st.dataframe(env_tablo.reset_index(drop=True), use_container_width=True, hide_index=True)
+                csv_data = env_tablo.reset_index().to_csv(index=False).encode("utf-8")
+                st.download_button(
+                    label="Envanter Reçetesini İndir (.CSV)",
+                    data=csv_data,
+                    file_name=f"GRRA_Envanter_Parametreleri_{s_carpan}x.csv",
+                    mime="text/csv",
+                )
         with ca2:
-            fig_abc = px.pie(
-                env_tablo.reset_index(), values="yillik_harcama_usd", names="hammadde",
-                hole=0.45, color="ABC",
-                color_discrete_map={"A": "#0f172a", "B": "#2563eb", "C": "#64748b"},
-                title="Yıllık Hammadde Harcama Dağılımı ve ABC Sınıfları",
-                template="plotly_white",
-            )
-            fig_abc.update_layout(height=340)
-            st.plotly_chart(fig_abc, use_container_width=True)
+            with st.container(border=True):
+                st.markdown('<div class="card-title">Yıllık Hammadde Harcama Dağılımı (ABC Analizi)</div>', unsafe_allow_html=True)
+                st.markdown('<div class="card-subtitle">Toplam satın alma bütçesinin hammaddelere göre dağılımı</div>', unsafe_allow_html=True)
+                fig_abc = px.pie(
+                    env_tablo.reset_index(), values="yillik_harcama_usd", names="hammadde",
+                    hole=0.48, color="ABC",
+                    color_discrete_map={"A": "#1e293b", "B": "#16a34a", "C": "#94a3b8"},
+                    template="plotly_white",
+                )
+                fig_abc.update_layout(height=320, margin=dict(l=10, r=10, t=10, b=10))
+                st.plotly_chart(fig_abc, use_container_width=True)
 
 
 if __name__ == "__main__":
