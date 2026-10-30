@@ -2,8 +2,7 @@
 GRRA - Yapay Zeka Destekli Satın Alma ve Envanter Karar Destek Sistemi
 ----------------------------------------------------------------------
 Tasarım Dili: Material Soft UI / Bootstrap 5 SaaS Dashboard Stili
-Veri Kaynakları: data/envanter.db, data/dis_degiskenler.csv,
-                 data/hibrit_tahmin_sonuc.csv, data/hibrit_simulasyon_sonuc.csv
+Özellik: Kullanıcının Serbestçe Girebildiği Dinamik Bütçe & Kasa Simülatörü
 
 Çalıştırmak için:
     & c:\python315\python.exe -m streamlit run 08_dashboard.py
@@ -32,7 +31,6 @@ st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
-    /* Ana Arka Plan ve Tipografi (Material Soft Gri Zemin) */
     .stApp {
         background-color: #f4f5f7;
         font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -44,7 +42,6 @@ st.markdown("""
         max-width: 96%;
     }
 
-    /* Sol Menü (Temiz Beyaz Material Sidebar) */
     section[data-testid="stSidebar"] {
         background-color: #ffffff !important;
         border-right: 1px solid #e5e7eb;
@@ -94,7 +91,6 @@ st.markdown("""
         margin-bottom: 10px;
     }
 
-    /* Üst Breadcrumb ve Başlık Çubuğu */
     .top-navbar {
         display: flex;
         justify-content: space-between;
@@ -140,7 +136,6 @@ st.markdown("""
         color: #0f172a;
     }
 
-    /* Üst Navigasyon Sekmeleri (Koyu Antrasit Hap Stili) */
     .stTabs [data-baseweb="tab-list"] {
         gap: 8px;
         background-color: #ffffff;
@@ -154,9 +149,9 @@ st.markdown("""
         height: 40px;
         background-color: transparent;
         border-radius: 8px;
-        padding: 0 18px;
+        padding: 0 16px;
         font-weight: 600;
-        font-size: 0.85rem;
+        font-size: 0.84rem;
         color: #64748b;
         border: none;
     }
@@ -166,7 +161,6 @@ st.markdown("""
         box-shadow: 0 4px 10px rgba(26, 32, 53, 0.25);
     }
 
-    /* Görseldeki Özel KPI Kartları (Sağ Üstte Koyu Antrasit Rozetli) */
     .mat-kpi-card {
         background-color: #ffffff;
         border-radius: 14px;
@@ -215,20 +209,10 @@ st.markdown("""
         font-size: 0.80rem;
         color: #64748b;
     }
-    .delta-pos {
-        color: #16a34a;
-        font-weight: 700;
-    }
-    .delta-neg {
-        color: #dc2626;
-        font-weight: 700;
-    }
-    .delta-neutral {
-        color: #2563eb;
-        font-weight: 700;
-    }
+    .delta-pos { color: #16a34a; font-weight: 700; }
+    .delta-neg { color: #dc2626; font-weight: 700; }
+    .delta-neutral { color: #2563eb; font-weight: 700; }
 
-    /* Grafik ve İçerik Kartları (White Surface Cards) */
     div[data-testid="stVerticalBlockBorderWrapper"] {
         background-color: #ffffff !important;
         border-radius: 14px !important;
@@ -255,7 +239,6 @@ st.markdown("""
         color: #94a3b8;
     }
 
-    /* Tedarik Emri / Sipariş Özeti Kartı (Orders Overview Stili) */
     .order-banner {
         background-color: #ffffff;
         border-radius: 14px;
@@ -330,7 +313,7 @@ MODEL_KATALOGU = {
         "mimari": "Huber Regresyon + L2 Lojistik Sınıflandırıcı + Makro Ridge",
         "girdiler": "CFTC COT Smart Money Spread, Dolar Endeksi (DXY), VIX, Maliyet Marjı, Hasat Anomalisi ve Vol-MACD.",
         "amac": "Aykırı fiyat şoklarından etkilenmeden yön olasılığını tahmin etmek ve tüm senaryolarda sıfır zarar ile maksimum tasarruf sağlamak.",
-        "rejim": "Kriz/şok dönemleri ve standart piyasa rejimleri (En yüksek net tasarruf: $101,459).",
+        "rejim": "Kriz/şok dönemleri ve standart piyasa rejimleri.",
     },
     "ridge_dis": {
         "ad": "Dış Değişkenli Ridge Regresyon (ridge_dis)",
@@ -381,9 +364,6 @@ MALIYET_SEPETI = {
 }
 
 
-# ---------------------------------------------------------------------------
-# 2. YARDIMCI GÖRSEL BİLEŞEN FONKSİYONLARI (MATERIAL KARTLAR)
-# ---------------------------------------------------------------------------
 def material_kpi_karti(baslik: str, deger: str, rozet: str, alt_vurgulu: str, alt_aciklama: str, durum: str = "pos"):
     renk_sinifi = {"pos": "delta-pos", "neg": "delta-neg", "neutral": "delta-neutral"}.get(durum, "delta-neutral")
     st.markdown(
@@ -404,9 +384,6 @@ def material_kpi_karti(baslik: str, deger: str, rozet: str, alt_vurgulu: str, al
     )
 
 
-# ---------------------------------------------------------------------------
-# 3. VERİ YÜKLEME VE HESAPLAMA FONKSİYONLARI
-# ---------------------------------------------------------------------------
 @st.cache_data
 def verileri_yukle():
     if not DB.exists():
@@ -515,9 +492,6 @@ def canli_faktoru_cozumle(fiyat_df: pd.DataFrame, dis_df: pd.DataFrame, hid: str
     }
 
 
-# ---------------------------------------------------------------------------
-# 4. ANA EKRAN VE MATERIAL DASHBOARD AKIŞI
-# ---------------------------------------------------------------------------
 def main():
     ham, fiyat, tuketim, tahmin, sim_stok, sim_siparis, dis_df, tah_ozet, sim_ozet = verileri_yukle()
 
@@ -626,14 +600,14 @@ def main():
     eoq_degisim_pct = ((ai_eoq / klasik_eoq) - 1.0) * 100.0
 
     # =========================================================================
-    # ÜST BREADCRUMB BAŞLIK VE HAP SEKMELER (MATERIAL TOPBAR)
+    # ÜST BREADCRUMB BAŞLIK VE HAP SEKMELER
     # =========================================================================
     st.markdown(
         f"""<div class="top-navbar">
             <div>
                 <div class="breadcrumb">Modüller &nbsp;/&nbsp; <span>Satın Alma ve Envanter Kontrol Paneli</span></div>
                 <div class="page-title">{m_bilgi['hammadde']} Tedarik ve Optimizasyon Kokpiti</div>
-                <div class="page-subtitle">Kantitatif fiyat sinyalleri, dinamik EOQ/ROP karar motoru ve Monte Carlo maliyet doğrulaması.</div>
+                <div class="page-subtitle">Kantitatif fiyat sinyalleri, dinamik EOQ/ROP karar motoru ve kullanıcı tanımlı bütçe simülatörü.</div>
             </div>
             <div class="status-pills">
                 <div class="status-pill">ABC Sınıfı: <b>{m_bilgi['ABC']} (%{m_bilgi['butce_payi_pct']} Bütçe)</b></div>
@@ -644,8 +618,9 @@ def main():
         unsafe_allow_html=True,
     )
 
-    tab1, tab2, tab3, tab4, tab5 = st.tabs([
+    tab1, tab_butce, tab2, tab3, tab4, tab5 = st.tabs([
         "Karar Kokpiti ve Sinyal Analizi",
+        "Dinamik Bütçe ve Kasa Simülatörü",
         "Fiyat Tahmini ve Şok Analizi",
         "Politika Simülasyonu ve Backtest",
         "İstatistiksel Doğrulama (DM Testi)",
@@ -653,10 +628,9 @@ def main():
     ])
 
     # =========================================================================
-    # SEKME 1: KARAR KOKPİTİ (GÖRSELDEKİ 4'LÜ KPI + 3'LÜ GRAFİK KART DÜZENİ)
+    # SEKME 1: KARAR KOKPİTİ
     # =========================================================================
     with tab1:
-        # 1. SATIR: GÖRSELDEKİ SAĞ ÜSTÜ SİYAH ROZETLİ 4 KPI KARTI
         k1, k2, k3, k4 = st.columns(4)
         with k1:
             material_kpi_karti(
@@ -695,7 +669,6 @@ def main():
                 durum="pos" if eoq_degisim_pct >= 0 else "neutral",
             )
 
-        # 2. SATIR: GÖRSELDEKİ 3 YAN YANA BEYAZ GRAFİK KARTI (SİNYAL, XAI, BACKTEST ÖZETİ)
         c_card1, c_card2, c_card3 = st.columns(3)
 
         with c_card1:
@@ -705,10 +678,7 @@ def main():
 
                 faktorler = canli_faktoru_cozumle(fiyat, dis_df, secili_hid)
                 f_df = pd.DataFrame({
-                    "Faktör": [
-                        "Maliyet Marjı", "MR120 (10Y)", "MR60 (5Y)",
-                        "Vol-MACD", "Momentum (3A)", "Makro İvme"
-                    ],
+                    "Faktör": ["Maliyet Marjı", "MR120 (10Y)", "MR60 (5Y)", "Vol-MACD", "Momentum (3A)", "Makro İvme"],
                     "Z_Skoru": list(faktorler.values()),
                 })
                 renkler = ["#16a34a" if v >= 0 else "#334155" for v in f_df["Z_Skoru"]]
@@ -730,7 +700,7 @@ def main():
         with c_card2:
             with st.container(border=True):
                 st.markdown('<div class="card-title">Fiyat Trendi ve 3 Aylık Tahmin</div>', unsafe_allow_html=True)
-                st.markdown(f'<div class="card-subtitle">Son 36 aylık gerçekleşen ve tahmin edilen yörünge</div>', unsafe_allow_html=True)
+                st.markdown('<div class="card-subtitle">Son 36 aylık gerçekleşen ve tahmin edilen yörünge</div>', unsafe_allow_html=True)
 
                 t3_kisa = tahmin[
                     (tahmin["hammadde_id"] == secili_hid)
@@ -788,7 +758,6 @@ def main():
                 st.plotly_chart(fig_st_mini, use_container_width=True)
                 st.markdown('<div class="card-footer">Simülasyon: 200 stokastik talep senaryosu</div>', unsafe_allow_html=True)
 
-        # 3. SATIR: KURUMSAL TEDARİK EMRİ KARTI (ALT BÖLÜM)
         if mevcut_stok <= ai_rop:
             onerilen_miktar = max(ai_eoq, ai_rop - mevcut_stok + ai_eoq * 0.5)
             fatura_usd = onerilen_miktar * m_bilgi["guncel_fiyat_usd"]
@@ -841,7 +810,170 @@ def main():
             )
 
     # =========================================================================
-    # SEKME 2: FİYAT TAHMİN PERFORMANSI VE ŞOK ANALİZİ
+    # SEKME 2: KULLANICI TANIMLI DİNAMİK BÜTÇE VE KASA SİMÜLATÖRÜ
+    # =========================================================================
+    with tab_butce:
+        with st.container(border=True):
+            st.markdown('<div class="card-title">Özel Sermaye ve Satın Alma Bütçesi Yapılandırması</div>', unsafe_allow_html=True)
+            st.markdown('<div class="card-subtitle">Simüle etmek istediğiniz yıllık/dönemsel hammadde alım bütçesini kendiniz girin veya hazır işletme ölçeklerinden birini seçin.</div>', unsafe_allow_html=True)
+
+            b_col1, b_col2, b_col3 = st.columns([1.2, 1.2, 1])
+            with b_col1:
+                hazir_olcek = st.selectbox(
+                    "Hızlı İşletme Ölçeği Seçimi",
+                    options=[
+                        "Özel Bütçe Girişi (Serbest)",
+                        "Küçük İşletme / Atölye ($50,000)",
+                        "Orta Ölçekli KOBİ ($100,000)",
+                        "Büyüyen Sanayi İşletmesi ($250,000)",
+                        "Büyük Fabrika Ölçeği ($1,000,000)",
+                        f"Veritabanı Tam Fabrika Ölçeği (${m_bilgi['yillik_harcama_usd']:,.0f})",
+                    ],
+                    index=2,
+                )
+                varsayilan_map = {
+                    "Özel Bütçe Girişi (Serbest)": 100000.0,
+                    "Küçük İşletme / Atölye ($50,000)": 50000.0,
+                    "Orta Ölçekli KOBİ ($100,000)": 100000.0,
+                    "Büyüyen Sanayi İşletmesi ($250,000)": 250000.0,
+                    "Büyük Fabrika Ölçeği ($1,000,000)": 1000000.0,
+                    f"Veritabanı Tam Fabrika Ölçeği (${m_bilgi['yillik_harcama_usd']:,.0f})": float(m_bilgi["yillik_harcama_usd"]),
+                }
+            with b_col2:
+                kullanici_butce_usd = st.number_input(
+                    "Satın Alma Sermaye Bütçeniz ($ USD)",
+                    min_value=5000.0,
+                    max_value=50000000.0,
+                    value=float(varsayilan_map[hazir_olcek]),
+                    step=5000.0,
+                    help="İstediğiniz bütçe tutarını buraya doğrudan yazabilirsiniz.",
+                )
+            with b_col3:
+                sim_sure_yil = st.selectbox(
+                    "Simülasyon Projeksiyon Süresi",
+                    options=[1, 3, 5],
+                    index=0,
+                    format_func=lambda y: f"{y} Yıllık Bütçe Projeksiyonu",
+                )
+
+        # GİRİLEN BÜTÇEYE GÖRE DİNAMİK ENVANTER VE EOQ/ROP ÖLÇEKLEMESİ
+        f_guncel = float(m_bilgi["guncel_fiyat_usd"])
+        f_ort = float(m_bilgi["ort_fiyat_usd"])
+        h_oran = float(m_bilgi["tutma_orani_pct"]) / 100.0
+        L_ay = int(m_bilgi["tedarik_suresi_ay"])
+
+        # İşletme ölçeği çarpanı (Girilen bütçenin veritabanındaki referans bütçeye oranı)
+        olcek_orani = kullanici_butce_usd / max(float(m_bilgi["yillik_harcama_usd"]), 1.0)
+        butce_yillik_ton = kullanici_butce_usd / f_ort
+        butce_aylik_ton = butce_yillik_ton / 12.0
+        butce_aylik_std = float(m_bilgi["talep_std_ton"]) * olcek_orani
+
+        # Bütçe ölçeğine uygun lojistik sipariş maliyeti (küçük bütçede LTL/parsiyel kamyon, büyükte tam konteyner)
+        s_butce_uyumlu = float(m_bilgi["siparis_maliyeti_usd"]) * np.clip(np.sqrt(olcek_orani), 0.15, 1.5)
+        h_usd_ton = h_oran * f_ort
+
+        butce_klasik_eoq = float(np.sqrt(2.0 * butce_yillik_ton * s_butce_uyumlu / h_usd_ton))
+        butce_ss = float(z_degeri * butce_aylik_std * np.sqrt(L_ay))
+        butce_klasik_rop = float(butce_aylik_ton * L_ay + butce_ss)
+
+        if w_agirlik >= 0:
+            butce_ai_rop = butce_klasik_rop + (beta_agresiflik * w_agirlik) * butce_aylik_ton
+            butce_ai_eoq = butce_klasik_eoq * (1.0 + beta_agresiflik * w_agirlik)
+        else:
+            butce_ai_rop = butce_klasik_rop + (0.60 * beta_agresiflik * w_agirlik) * butce_aylik_ton
+            butce_ai_eoq = butce_klasik_eoq * (1.0 + 0.70 * beta_agresiflik * w_agirlik)
+
+        # Simülasyon tablosundan seçili modelin yüzde maliyet avantajını al
+        sim_alt = sim_ozet[(sim_ozet["S_carpani"] == s_carpan) & (sim_ozet["hammadde"] == secili_hid)].copy()
+        secili_satir = sim_alt[sim_alt["politika"] == secili_model]
+        tasarruf_pct = -float(secili_satir["rop_eoq_e_gore_pct"].iloc[0]) if not secili_satir.empty else 0.0
+
+        toplam_donem_butce = kullanici_butce_usd * sim_sure_yil
+        butce_net_kar_usd = toplam_donem_butce * (tasarruf_pct / 100.0)
+        ekstra_alinabilen_ton = butce_net_kar_usd / f_guncel
+
+        bk1, bk2, bk3, bk4 = st.columns(4)
+        with bk1:
+            material_kpi_karti(
+                baslik=f"Bütçe Alım Gücü ({sim_sure_yil} Yıl)",
+                deger=f"${toplam_donem_butce:,.0f}",
+                rozet="CAP",
+                alt_vurgulu=f"{butce_yillik_ton * sim_sure_yil:,.1f} Ton",
+                alt_aciklama=f"(Aylık tüketim: {butce_aylik_ton:.1f} T/ay)",
+                durum="neutral",
+            )
+        with bk2:
+            material_kpi_karti(
+                baslik="Bütçeye Uygun Klasik EOQ",
+                deger=f"{butce_klasik_eoq:.1f} Ton",
+                rozet="EOQ",
+                alt_vurgulu=f"${butce_klasik_eoq * f_guncel:,.0f} /parti",
+                alt_aciklama=f"(Klasik ROP: {butce_klasik_rop:.1f} T)",
+                durum="neutral",
+            )
+        with bk3:
+            material_kpi_karti(
+                baslik="Bütçeye Uygun AI EOQ",
+                deger=f"{butce_ai_eoq:.1f} Ton",
+                rozet="AI",
+                alt_vurgulu=f"${butce_ai_eoq * f_guncel:,.0f} /parti",
+                alt_aciklama=f"(Dinamik ROP: {butce_ai_rop:.1f} T)",
+                durum="pos",
+            )
+        with bk4:
+            material_kpi_karti(
+                baslik="Cebinizde Kalan Net Kâr",
+                deger=f"${butce_net_kar_usd:+,.0f}",
+                rozet="KÂR",
+                alt_vurgulu=f"%{tasarruf_pct:+.2f} Tasarruf",
+                alt_aciklama=f"({ekstra_alinabilen_ton:+.2f} ton bedelsiz mal)",
+                durum="pos" if butce_net_kar_usd >= 0 else "neg",
+            )
+
+        bc1, bc2 = st.columns([1.25, 1])
+        with bc1:
+            with st.container(border=True):
+                st.markdown(f'<div class="card-title">${toplam_donem_butce:,.0f} Bütçe Ölçeğinde Tüm Modellerin Karşılaştırması</div>', unsafe_allow_html=True)
+                st.markdown(f'<div class="card-subtitle">Girdiğiniz bütçe ile klasik EOQ yerine yapay zeka kullanıldığında kasada kalan net nakit</div>', unsafe_allow_html=True)
+
+                if not sim_alt.empty:
+                    b_df = sim_alt[sim_alt["politika"] != "mukemmel"].copy()
+                    b_df["Klasik Bütçe ($)"] = round(toplam_donem_butce)
+                    b_df["Model Harcaması ($)"] = (toplam_donem_butce * (1.0 + b_df["rop_eoq_e_gore_pct"] / 100.0)).round(0)
+                    b_df["Net Kâr / Tasarruf ($)"] = (toplam_donem_butce * (-b_df["rop_eoq_e_gore_pct"] / 100.0)).round(0)
+                    b_df["Kazanılan Tonaj (T)"] = (b_df["Net Kâr / Tasarruf ($)"] / f_guncel).round(2)
+
+                    st.dataframe(
+                        b_df[["politika", "Model Harcaması ($)", "Net Kâr / Tasarruf ($)", "Kazanılan Tonaj (T)", "rop_eoq_e_gore_pct", "hizmet_duzeyi"]].rename(columns={
+                            "politika": "Politika / Model",
+                            "rop_eoq_e_gore_pct": "Maliyet Farkı (%)",
+                            "hizmet_duzeyi": "Hizmet Düzeyi",
+                        }),
+                        use_container_width=True, hide_index=True,
+                    )
+                st.markdown('<div class="card-footer">Tablo girdiğiniz bütçe tutarına göre anlık olarak yeniden ölçeklenir</div>', unsafe_allow_html=True)
+
+        with bc2:
+            with st.container(border=True):
+                st.markdown(f'<div class="card-title">${toplam_donem_butce:,.0f} Bütçede Modellerin Net Nakit Katkısı</div>', unsafe_allow_html=True)
+                st.markdown('<div class="card-subtitle">Klasik ROP-EOQ (0 $) referansına göre cebe kalan dolar tutarı</div>', unsafe_allow_html=True)
+
+                if not sim_alt.empty:
+                    b_plot = b_df[b_df["politika"] != "rop_eoq"].copy()
+                    renk_b = ["#16a34a" if v >= 0 else "#dc2626" for v in b_plot["Net Kâr / Tasarruf ($)"]]
+                    fig_b = go.Figure(go.Bar(
+                        x=b_plot["politika"], y=b_plot["Net Kâr / Tasarruf ($)"],
+                        marker_color=renk_b, width=0.48,
+                        text=b_plot["Net Kâr / Tasarruf ($)"].apply(lambda v: f"${v:+,.0f}"),
+                        textposition="auto",
+                    ))
+                    fig_b.add_hline(y=0, line_color="#1e293b", line_width=1.2)
+                    fig_b.update_layout(template="plotly_white", height=265, margin=dict(l=10, r=10, t=10, b=10))
+                    st.plotly_chart(fig_b, use_container_width=True)
+                st.markdown('<div class="card-footer">Yeşil sütunlar bütçenizden sağlanan doğrudan nakit tasarrufu gösterir</div>', unsafe_allow_html=True)
+
+    # =========================================================================
+    # SEKME 3: FİYAT TAHMİN PERFORMANSI VE ŞOK ANALİZİ
     # =========================================================================
     with tab2:
         with st.container(border=True):
@@ -896,7 +1028,7 @@ def main():
                 st.plotly_chart(fig_fiyat, use_container_width=True)
 
     # =========================================================================
-    # SEKME 3: MONTE CARLO SİMÜLASYONU VE MALİYET TASARRUFU (BACKTEST)
+    # SEKME 4: MONTE CARLO SİMÜLASYONU VE MALİYET TASARRUFU (BACKTEST)
     # =========================================================================
     with tab3:
         sc1, sc2 = st.columns([1.35, 1])
@@ -925,7 +1057,7 @@ def main():
 
             with sc2:
                 with st.container(border=True):
-                    st.markdown(f'<div class="card-title">Klasik ROP-EOQ\'ya Göre Net Tasarruf (USD)</div>', unsafe_allow_html=True)
+                    st.markdown('<div class="card-title">Klasik ROP-EOQ\'ya Göre Net Tasarruf (USD)</div>', unsafe_allow_html=True)
                     st.markdown(f'<div class="card-subtitle">{m_bilgi["hammadde"]} ({s_carpan}x) senaryosunda modellerin nakit katkısı</div>', unsafe_allow_html=True)
                     s_plot = s_sub[~s_sub["politika"].isin(["mukemmel", "rop_eoq"])].copy()
                     renk_bar = ["#16a34a" if v >= 0 else "#dc2626" for v in s_plot["tasarruf_usd"]]
@@ -970,7 +1102,7 @@ def main():
                 st.plotly_chart(fig_stok, use_container_width=True)
 
     # =========================================================================
-    # SEKME 4: İSTATİSTİKSEL DOĞRULAMA (DM TESTİ) VE MODEL REHBERİ
+    # SEKME 5: İSTATİSTİKSEL DOĞRULAMA (DM TESTİ) VE MODEL REHBERİ
     # =========================================================================
     with tab4:
         with st.container(border=True):
@@ -1010,7 +1142,7 @@ def main():
                     st.plotly_chart(fig_yon, use_container_width=True)
 
     # =========================================================================
-    # SEKME 5: ENVANTER PARAMETRELERİ VE ABC ANALİZİ
+    # SEKME 6: ENVANTER PARAMETRELERİ VE ABC ANALİZİ
     # =========================================================================
     with tab5:
         ca1, ca2 = st.columns([1.45, 1])
